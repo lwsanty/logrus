@@ -315,7 +315,7 @@ func TestTextFormatterFieldMap(t *testing.T) {
 		Message: "oh hi",
 		Level:   WarnLevel,
 		Time:    time.Date(1981, time.February, 24, 4, 28, 3, 100, time.UTC),
-		Data: Fields{
+		data: Fields{
 			"field1":     "f1",
 			"message":    "messagefield",
 			"somelevel":  "levelfield",
@@ -570,7 +570,7 @@ func TestCustomSorting(t *testing.T) {
 		Message: "Testing custom sort function",
 		Time:    time.Now(),
 		Level:   InfoLevel,
-		Data: Fields{
+		data: Fields{
 			"test":      "testvalue",
 			"prefix":    "the application prefix",
 			"blablabla": "blablabla",

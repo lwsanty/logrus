@@ -51,7 +51,7 @@ type ModifyHook struct {
 }
 
 func (hook *ModifyHook) Fire(entry *Entry) error {
-	entry.Data["wow"] = "whale"
+	entry.Data()["wow"] = "whale"
 	return nil
 }
 

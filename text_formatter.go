@@ -125,7 +125,7 @@ func (f *TextFormatter) isColored() bool {
 // Format renders a single log entry
 func (f *TextFormatter) Format(entry *Entry) ([]byte, error) {
 	data := make(Fields)
-	for k, v := range entry.Data {
+	for k, v := range entry.Data() {
 		data[k] = v
 	}
 	prefixFieldClashes(data, f.FieldMap, entry.HasCaller())

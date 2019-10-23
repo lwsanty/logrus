@@ -49,10 +49,12 @@ var ErrorKey = "error"
 // Info, Warn, Error, Fatal or Panic is called on it. These objects can be
 // reused and passed around as much as you wish to avoid field duplication.
 type Entry struct {
+	mu sync.Mutex
+
 	Logger *Logger
 
 	// Contains all the fields set by the user.
-	Data Fields
+	data Fields
 
 	// Time at which the log entry was created
 	Time time.Time
@@ -81,8 +83,22 @@ func NewEntry(logger *Logger) *Entry {
 	return &Entry{
 		Logger: logger,
 		// Default is three fields, plus one optional.  Give a little extra room.
-		Data: make(Fields, 6),
+		data: make(Fields, 6),
 	}
+}
+
+func (entry *Entry) SetData(data Fields) {
+	entry.mu.Lock()
+	defer entry.mu.Unlock()
+
+	entry.data = data
+}
+
+func (entry *Entry) Data() Fields {
+	entry.mu.Lock()
+	defer entry.mu.Unlock()
+
+	return entry.data
 }
 
 // Returns the string representation from the reader and ultimately the
@@ -103,7 +119,7 @@ func (entry *Entry) WithError(err error) *Entry {
 
 // Add a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
-	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: entry.Time, err: entry.err, Context: ctx}
+	return &Entry{Logger: entry.Logger, data: entry.Data(), Time: entry.Time, err: entry.err, Context: ctx}
 }
 
 // Add a single field to the Entry.
@@ -113,8 +129,10 @@ func (entry *Entry) WithField(key string, value interface{}) *Entry {
 
 // Add a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
-	data := make(Fields, len(entry.Data)+len(fields))
-	for k, v := range entry.Data {
+	entryData := entry.Data()
+
+	data := make(Fields, len(entryData)+len(fields))
+	for k, v := range entryData {
 		data[k] = v
 	}
 	fieldErr := entry.err
@@ -139,12 +157,12 @@ func (entry *Entry) WithFields(fields Fields) *Entry {
 			data[k] = v
 		}
 	}
-	return &Entry{Logger: entry.Logger, Data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
+	return &Entry{Logger: entry.Logger, data: data, Time: entry.Time, err: fieldErr, Context: entry.Context}
 }
 
 // Overrides the time of the Entry.
 func (entry *Entry) WithTime(t time.Time) *Entry {
-	return &Entry{Logger: entry.Logger, Data: entry.Data, Time: t, err: entry.err, Context: entry.Context}
+	return &Entry{Logger: entry.Logger, data: entry.Data(), Time: t, err: entry.err, Context: entry.Context}
 }
 
 // getPackageName reduces a fully qualified function name to the package name

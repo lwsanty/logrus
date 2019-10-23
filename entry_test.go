@@ -20,17 +20,17 @@ func TestEntryWithError(t *testing.T) {
 
 	err := fmt.Errorf("kaboom at layer %d", 4711)
 
-	assert.Equal(err, WithError(err).Data["error"])
+	assert.Equal(err, WithError(err).Data()["error"])
 
 	logger := New()
 	logger.Out = &bytes.Buffer{}
 	entry := NewEntry(logger)
 
-	assert.Equal(err, entry.WithError(err).Data["error"])
+	assert.Equal(err, entry.WithError(err).Data()["error"])
 
 	ErrorKey = "err"
 
-	assert.Equal(err, entry.WithError(err).Data["err"])
+	assert.Equal(err, entry.WithError(err).Data()["err"])
 
 }
 
@@ -57,7 +57,7 @@ func TestEntryPanicln(t *testing.T) {
 		switch pVal := p.(type) {
 		case *Entry:
 			assert.Equal(t, "kaboom", pVal.Message)
-			assert.Equal(t, errBoom, pVal.Data["err"])
+			assert.Equal(t, errBoom, pVal.Data()["err"])
 		default:
 			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
 		}
@@ -79,7 +79,7 @@ func TestEntryPanicf(t *testing.T) {
 		switch pVal := p.(type) {
 		case *Entry:
 			assert.Equal(t, "kaboom true", pVal.Message)
-			assert.Equal(t, errBoom, pVal.Data["err"])
+			assert.Equal(t, errBoom, pVal.Data()["err"])
 		default:
 			t.Fatalf("want type *Entry, got %T: %#v", pVal, pVal)
 		}
@@ -162,8 +162,8 @@ func TestEntryLogfLevel(t *testing.T) {
 	entry := NewEntry(logger)
 
 	entry.Logf(DebugLevel, "%s", "debug")
-	assert.NotContains(t, buffer.String(), "debug", )
+	assert.NotContains(t, buffer.String(), "debug")
 
 	entry.Logf(WarnLevel, "%s", "warn")
-	assert.Contains(t, buffer.String(), "warn", )
+	assert.Contains(t, buffer.String(), "warn")
 }
